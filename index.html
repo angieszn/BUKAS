@@ -80,7 +80,10 @@
     </div>
     <div class="foot" style="margin-top: auto;">
       <button class="frame-btn" id="intro-continue">Begin</button>
-      <button class="link-btn quiet-btn" data-sign-out>Sign out</button>
+      <button class="link-btn quiet-btn" data-to-account>Account</button>
+    </div>
+    <div class="intro-skip">
+      <button class="link-btn quiet-btn" id="intro-skip">Skip</button>
     </div>
   </section>
 
@@ -118,6 +121,7 @@
   <!-- WAITING — a return has arrived; the reader chooses the moment -->
   <section class="screen" id="waiting">
     <div class="pad-top">
+      <h1 class="wordmark" style="margin: 0 0 1.4rem;">Bukas</h1>
       <p class="lede" style="margin: 0 0 3.5rem;">Your past journal entries will return here.</p>
       <p class="body-text" style="font-size: 1.5rem;">Something has come back.</p>
     </div>
@@ -125,20 +129,21 @@
       <button class="frame-btn" id="read-return">Read it</button>
       <button class="link-btn quiet-btn" id="waiting-write">Write</button>
       <button class="link-btn quiet-btn" data-to-about>About</button>
-      <button class="link-btn quiet-btn" data-sign-out>Sign out</button>
+      <button class="link-btn quiet-btn" data-to-account>Account</button>
     </div>
   </section>
 
   <!-- 5. HOME -->
   <section class="screen" id="home">
     <div class="pad-top">
+      <h1 class="wordmark" style="margin: 0 0 1.4rem;">Bukas</h1>
       <p class="lede" style="margin: 0 0 3.5rem;">Your past journal entries will return here.</p>
       <p class="body-text" style="font-size: 1.5rem;">Nothing today.</p>
     </div>
     <div class="foot" style="margin-top: auto;">
       <button class="frame-btn" id="to-write">Write</button>
       <button class="link-btn quiet-btn" data-to-about>About</button>
-      <button class="link-btn quiet-btn" data-sign-out>Sign out</button>
+      <button class="link-btn quiet-btn" data-to-account>Account</button>
     </div>
   </section>
 
@@ -168,7 +173,7 @@
       <button class="frame-btn" id="reseal">Seal it again</button>
       <button class="link-btn quiet-btn" id="not-now">Not now</button>
       <button class="seal-hold" id="let-go"><span>Hold to let it go</span></button>
-      <button class="link-btn quiet-btn" data-sign-out>Sign out</button>
+      <button class="link-btn quiet-btn" data-to-account>Account</button>
     </div>
   </section>
 
@@ -203,10 +208,62 @@
       </section>
     </div>
     <div class="foot" style="margin-top: auto;">
-      <button class="link-btn" id="export">Export everything</button>
-      <button class="link-btn quiet-btn" data-sign-out id="sign-out">Sign out</button>
-      <button class="link-btn quiet-btn" id="about-back">Back</button>
+      <button class="seal-hold" id="about-back"><span>Back to home</span></button>
     </div>
+  </section>
+
+  <!-- ACCOUNT -->
+  <section class="screen" id="account">
+    <div class="pad-top">
+      <h2 class="wordmark" style="font-size: 1.8rem;">Account</h2>
+
+      <div class="acct-rows">
+        <div class="acct-row">
+          <span class="label">Email</span>
+          <p class="acct-value" id="acct-email"></p>
+          <p class="acct-note" id="acct-email-pending" hidden></p>
+          <button class="link-btn quiet-btn" id="acct-email-toggle" aria-expanded="false" aria-controls="acct-email-form">Change email</button>
+          <form class="stack acct-form" id="acct-email-form" hidden>
+            <div class="field">
+              <label class="label" for="acct-new-email">New email</label>
+              <input type="email" id="acct-new-email" autocomplete="email" required>
+            </div>
+            <div class="row"><button type="submit" class="frame-btn">Save email</button></div>
+          </form>
+        </div>
+
+        <div class="acct-row">
+          <span class="label">Password</span>
+          <button class="link-btn quiet-btn" id="acct-pw-toggle" aria-expanded="false" aria-controls="acct-pw-form">Change password</button>
+          <form class="stack acct-form" id="acct-pw-form" hidden>
+            <div class="field">
+              <label class="label" for="acct-new-pw">New password</label>
+              <input type="password" id="acct-new-pw" autocomplete="new-password" required>
+            </div>
+            <div class="row"><button type="submit" class="frame-btn">Save password</button></div>
+          </form>
+        </div>
+
+        <div class="acct-row" id="acct-joined-row">
+          <span class="label">Joined</span>
+          <p class="acct-value" id="acct-joined"></p>
+        </div>
+
+        <div class="acct-row">
+          <span class="label">Your writing</span>
+          <button class="link-btn" id="export">Export everything</button>
+        </div>
+      </div>
+
+      <p class="notice" id="acct-notice" role="status"></p>
+    </div>
+
+    <div class="foot">
+      <button class="seal-hold" id="account-back"><span>Back to home</span></button>
+      <button class="link-btn quiet-btn" data-to-about>About</button>
+      <button class="link-btn quiet-btn" data-sign-out id="sign-out">Sign out</button>
+    </div>
+
     <section class="about-sec" id="delete-sec">
       <h3 class="label">Leaving</h3>
       <p>Export first if you want to keep anything. Deleting your account removes it and everything in it, sealed entries included. It can&rsquo;t be undone.</p>

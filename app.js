@@ -134,6 +134,20 @@ class SupabaseStore {
     const { error } = await this.db.auth.updateUser({ password });
     if (error) throw error;
   }
+  async accountInfo() {
+    const { data, error } = await this.db.auth.getUser();
+    if (error) throw error;
+    const u = data.user || {};
+    return { email: u.email || '', joined: u.created_at || null, pendingEmail: u.new_email || null };
+  }
+  async changeEmail(email) {
+    const { error } = await this.db.auth.updateUser(
+      { email },
+      { emailRedirectTo: location.href.split('#')[0] }
+    );
+    if (error) throw error;
+    return 'email';
+  }
   async deleteAccount() {
     const { error } = await this.db.rpc('delete_my_account');
     if (error) throw error;
@@ -214,7 +228,7 @@ class LocalStore {
   async signUp(email, password) {
     const e = email.toLowerCase();
     if (this.data.users[e]) throw new Error('An account already exists for that email.');
-    this.data.users[e] = { id: 'u_' + Math.random().toString(36).slice(2), password };
+    this.data.users[e] = { id: 'u_' + Math.random().toString(36).slice(2), password, created_at: new Date().toISOString() };
     this.data.session = this.data.users[e].id;
     this.persist();
     return true;
@@ -243,6 +257,25 @@ class LocalStore {
     this.data.session = u.id;
     this.resetEmail = null;
     this.persist();
+  }
+  mineUser() {
+    const hit = Object.entries(this.data.users).find(([, u]) => u.id === this.data.session);
+    return hit ? { email: hit[0], user: hit[1] } : null;
+  }
+  async accountInfo() {
+    const m = this.mineUser();
+    return m ? { email: m.email, joined: m.user.created_at || null, pendingEmail: null } : { email: '', joined: null, pendingEmail: null };
+  }
+  async changeEmail(email) {
+    const e = email.toLowerCase();
+    const m = this.mineUser();
+    if (!m) throw new Error('Sign in again to change your email.');
+    if (e === m.email) throw new Error('That\u2019s already your email.');
+    if (this.data.users[e]) throw new Error('An account already exists for that email.');
+    this.data.users[e] = m.user;
+    delete this.data.users[m.email];
+    this.persist();
+    return 'local';
   }
   async deleteAccount() {
     const uid = this.data.session;
@@ -429,11 +462,83 @@ let signedIn = false;
 function openAbout() {
   $('#built-on').hidden = true;
   $('#built-toggle').setAttribute('aria-expanded', 'false');
-  $('#export').hidden = !signedIn;
-  $('#sign-out').hidden = !signedIn;
-  $('#delete-sec').hidden = !signedIn;
-  $('#about-back').textContent = signedIn ? 'Back' : 'Back to sign in';
+  $('#about-back').querySelector('span').textContent = signedIn ? 'Back to home' : 'Back to sign in';
   show('about');
+}
+
+function closeAcctForms() {
+  for (const [t, f] of [['#acct-email-toggle', '#acct-email-form'], ['#acct-pw-toggle', '#acct-pw-form']]) {
+    $(f).hidden = true; $(f).reset(); $(t).setAttribute('aria-expanded', 'false');
+  }
+}
+
+async function openAccount() {
+  closeAcctForms();
+  $('#acct-notice').textContent = '';
+  $('#acct-email').textContent = '';
+  $('#acct-email-pending').hidden = true;
+  $('#acct-joined-row').hidden = true;
+  show('account');
+  try {
+    const info = await store.accountInfo();
+    $('#acct-email').textContent = info.email;
+    if (info.pendingEmail) {
+      $('#acct-email-pending').textContent = `Waiting for you to confirm ${info.pendingEmail}. Until then, sign in with the email above.`;
+      $('#acct-email-pending').hidden = false;
+    }
+    if (info.joined) {
+      const d = new Date(info.joined);
+      $('#acct-joined').textContent = `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+      $('#acct-joined-row').hidden = false;
+    }
+  } catch (err) {
+    console.warn(err);
+    $('#acct-notice').textContent = 'Your account details didn\u2019t load. Check your connection and try again.';
+  }
+}
+
+function toggleAcctForm(toggleSel, formSel, focusSel) {
+  const f = $(formSel), open = f.hidden;
+  closeAcctForms();
+  $('#acct-notice').textContent = '';
+  f.hidden = !open;
+  $(toggleSel).setAttribute('aria-expanded', String(open));
+  if (open) $(focusSel).focus();
+}
+
+async function handleChangeEmail(e) {
+  e.preventDefault();
+  const email = $('#acct-new-email').value.trim();
+  const note = $('#acct-notice');
+  if (!email) return;
+  try {
+    const how = await store.changeEmail(email);
+    closeAcctForms();
+    if (how === 'local') {
+      $('#acct-email').textContent = email.toLowerCase();
+      note.textContent = 'Email changed.';
+    } else {
+      $('#acct-email-pending').textContent = `We\u2019ve sent a link to ${email}. Open it to confirm the change. Until then, sign in with the email above.`;
+      $('#acct-email-pending').hidden = false;
+      note.textContent = '';
+    }
+  } catch (err) {
+    note.textContent = err.message || 'That didn\u2019t work.';
+  }
+}
+
+async function handleChangePassword(e) {
+  e.preventDefault();
+  const pw = $('#acct-new-pw').value;
+  const note = $('#acct-notice');
+  if (pw.length < 6) { note.textContent = 'At least six characters.'; return; }
+  try {
+    await store.updatePassword(pw);
+    closeAcctForms();
+    note.textContent = 'Password changed.';
+  } catch (err) {
+    note.textContent = err.message || 'That didn\u2019t work.';
+  }
 }
 
 let introTimers = [];
@@ -445,11 +550,13 @@ function runIntro() {
   const foot = document.querySelector('#intro .foot');
   paras.forEach(p => p.classList.remove('is-in'));
   foot.classList.remove('is-in');
+  document.querySelector('.intro-skip').classList.remove('is-gone');
   paras.forEach((p, i) => {
     introTimers.push(setTimeout(() => p.classList.add('is-in'), 300 + i * 2600));
   });
   introTimers.push(setTimeout(() => {
     foot.classList.add('is-in');
+    document.querySelector('.intro-skip').classList.add('is-gone');
     // If the column is taller than the viewport, bring the control to the eye
     // as it arrives rather than leaving it below the fold.
     if (document.documentElement.scrollHeight > window.innerHeight + 4) {
@@ -1036,6 +1143,11 @@ function wire() {
   $('#about-back').addEventListener('click', () => {
     if (signedIn) resolveHome(); else show('landing');
   });
+  $('#intro-skip').addEventListener('click', () => {
+    introTimers.forEach(clearTimeout);
+    introTimers = [];
+    resolveHome();
+  });
   $('#intro-continue').addEventListener('click', () => {
     introTimers.forEach(clearTimeout);
     introTimers = [];
@@ -1048,6 +1160,14 @@ function wire() {
     panel.hidden = !open;
     e.currentTarget.setAttribute('aria-expanded', String(open));
   });
+  document.querySelectorAll('[data-to-account]').forEach(b =>
+    b.addEventListener('click', openAccount));
+  $('#account-back').addEventListener('click', () => resolveHome());
+  $('#acct-email-toggle').addEventListener('click', () => toggleAcctForm('#acct-email-toggle', '#acct-email-form', '#acct-new-email'));
+  $('#acct-pw-toggle').addEventListener('click', () => toggleAcctForm('#acct-pw-toggle', '#acct-pw-form', '#acct-new-pw'));
+  $('#acct-email-form').addEventListener('submit', handleChangeEmail);
+  $('#acct-pw-form').addEventListener('submit', handleChangePassword);
+
   document.querySelectorAll('[data-sign-out]').forEach(b =>
     b.addEventListener('click', async () => {
       introTimers.forEach(clearTimeout);

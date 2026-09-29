@@ -201,10 +201,13 @@ input:focus { border-bottom-color: var(--accent); }
 .compose-foot {
   padding: 1.6rem 0 0;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.5rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.9rem;
 }
+.compose-foot { align-items: center; }
+.compose-foot .seal-hold { white-space: nowrap; text-align: center; width: min(100%, 17rem); }
+#seal-hold { order: -1; }
 .compose-leave { padding: 1.2rem 0 2.2rem; }
 #compose-discard, #let-go { color: var(--muted); }
 #let-go::before { background: rgba(35, 33, 28, 0.1); }
@@ -292,6 +295,11 @@ input:focus { border-bottom-color: var(--accent); }
 
 #intro .foot { opacity: 0; transition: opacity 1400ms ease; }
 #intro .foot.is-in { opacity: 1; }
+.intro-skip { position: fixed; left: 0; right: 0; bottom: 0; max-width: 34rem; margin: 0 auto; padding: 0 1.6rem 2.2rem; display: flex; justify-content: flex-end; transition: opacity 600ms ease; pointer-events: none; }
+.intro-skip button { pointer-events: auto; min-height: 44px; display: inline-flex; align-items: flex-end; }
+.intro-skip.is-gone { opacity: 0; }
+.intro-skip.is-gone button { pointer-events: none; }
+@media (min-width: 40rem) { .intro-skip { padding: 0 2.5rem 2.2rem; } }
 
 @media (min-height: 42rem) {
   #intro .pad-top { padding-top: 4rem; }
@@ -313,6 +321,19 @@ input:focus { border-bottom-color: var(--accent); }
 .about-sec p:last-child { margin-bottom: 0; }
 #built-on { margin-top: 1.8rem; }
 #delete-sec { margin: 0; padding: 2rem 0 2.8rem; border-top: 1px solid var(--rule); }
+#about-back, #account-back { color: var(--muted); }
+#about-back::before, #account-back::before { display: none; }
+#about-back:hover, #account-back:hover { color: var(--accent); border-color: var(--accent); }
+
+.acct-rows { margin: 2.4rem 0 0; border-top: 1px solid var(--rule); }
+.acct-row {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 0.55rem;
+  padding: 1.3rem 0; border-bottom: 1px solid var(--rule);
+}
+.acct-value { margin: 0; font-size: 1.12rem; overflow-wrap: anywhere; }
+.acct-note { margin: 0; font-size: 0.95rem; line-height: 1.6; color: var(--muted); }
+.acct-form { width: 100%; padding: 0.6rem 0 0.2rem; }
+#account .notice { margin-top: 1.2rem; }
 #delete-sec p { font-size: 1rem; line-height: 1.7; color: var(--muted); margin: 0 0 1.4rem; }
 #delete-account { color: var(--muted); }
 #delete-account::before { background: rgba(35, 33, 28, 0.12); }
