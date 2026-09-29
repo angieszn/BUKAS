@@ -5,12 +5,14 @@
 // an empty list to an unauthenticated request.
 
 module.exports = async (req, res) => {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_ANON_KEY;
+  let url = (process.env.SUPABASE_URL || '').trim();
+  const key = (process.env.SUPABASE_ANON_KEY || '').trim();
+  try { if (url) url = new URL(url).origin; } catch (e) {}
   if (!url || !key) { res.statusCode = 503; res.end('not configured'); return; }
   try {
-    const r = await fetch(url.replace(/\/$/, '') + '/rest/v1/entries?select=id&limit=1', {
-      headers: { apikey: key, Authorization: 'Bearer ' + key }
+    const r = await fetch(url + '/rest/v1/entries?select=id&limit=1', {
+      // apikey alone works with both legacy anon keys and new publishable keys.
+      headers: { apikey: key }
     });
     res.statusCode = r.ok ? 200 : 502;
     res.end(r.ok ? 'awake' : 'supabase responded ' + r.status);

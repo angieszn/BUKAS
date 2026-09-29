@@ -5,8 +5,9 @@
 // protects the data — this just keeps configuration out of the code.)
 
 module.exports = (req, res) => {
-  const url = process.env.SUPABASE_URL || '';
-  const key = process.env.SUPABASE_ANON_KEY || '';
+  let url = (process.env.SUPABASE_URL || '').trim();
+  const key = (process.env.SUPABASE_ANON_KEY || '').trim();
+  try { if (url) url = new URL(url).origin; } catch (e) {}
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   if (!url || !key) {
