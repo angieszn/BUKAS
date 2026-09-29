@@ -4,6 +4,6 @@
   "version": "1.0.0",
   "description": "A journal whose entries are sealed and returned at a time you do not choose.",
   "engines": {
-    "node": "22.x"
+    "node": ">=18"
   }
 }
