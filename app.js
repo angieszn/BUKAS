@@ -484,8 +484,6 @@ let currentPrompt = null;   // the prompt on screen right now, if any
 let signedIn = false;
 
 function openAbout() {
-  $('#built-on').hidden = true;
-  $('#built-toggle').setAttribute('aria-expanded', 'false');
   $('#about-back').querySelector('span').textContent = signedIn ? 'Back to home' : 'Back to sign in';
   show('about');
 }
@@ -535,7 +533,7 @@ async function handleChangePassword(e) {
     closeAcctForms();
     note.textContent = 'Password changed.';
   } catch (err) {
-    note.textContent = err.message || 'That didn\u2019t work.';
+    note.textContent = friendlyError(err) || 'That didn\u2019t work.';
     if (err.code === 'SESSION_EXPIRED') {
       // Send them to sign in with their email filled in.
       const email = $('#acct-email').textContent;
@@ -621,6 +619,26 @@ function show(id) {
 
 /* ---------- auth ---------- */
 
+// Supabase's password errors list every allowed character; say it plainly.
+function friendlyError(err) {
+  const m = (err && err.message) || '';
+  if (/at least one character of each/i.test(m)) {
+    const need = [];
+    if (m.includes('abcdefghijklmnopqrstuvwxyz')) need.push('a lowercase letter');
+    if (m.includes('ABCDEFGHIJKLMNOPQRSTUVWXYZ')) need.push('an uppercase letter');
+    if (m.includes('0123456789')) need.push('a number');
+    if (/[!@#$%^&*()_+\-=\[\]{};':"|<>?,.\/`~]{4,}/.test(m)) need.push('a symbol');
+    if (!need.length) return 'Your password needs a mix of letters and numbers.';
+    const list = need.length > 1 ? need.slice(0, -1).join(', ') + ' and ' + need[need.length - 1] : need[0];
+    return 'Your password needs at least ' + list + '.';
+  }
+  const len = m.match(/at least (\d+) characters/i);
+  if (len && /password/i.test(m)) return 'Your password needs at least ' + len[1] + ' characters.';
+  if (/weak|pwned|leaked|compromised/i.test(m) && /password/i.test(m)) return 'That password has shown up in a data breach. Try a different one.';
+  if (/same.*password|different from the old/i.test(m)) return 'Your new password needs to be different from your current one.';
+  return m;
+}
+
 function setMode(mode) {
   const labels = {
     signup: ['Sign up', 'I already have an account'],
@@ -649,7 +667,7 @@ async function handleAuth(e) {
       if (how === 'local') { show('new-password'); return; }
       $('#auth-notice').textContent = 'If there\u2019s an account for that email, a link to reset your password is on its way.';
     } catch (err) {
-      $('#auth-notice').textContent = err.message || 'That did not work.';
+      $('#auth-notice').textContent = friendlyError(err) || 'That did not work.';
     }
     return;
   }
@@ -669,7 +687,7 @@ async function handleAuth(e) {
     }
     await enter(true);
   } catch (err) {
-    $('#auth-notice').textContent = err.message || 'That did not work.';
+    $('#auth-notice').textContent = friendlyError(err) || 'That did not work.';
   }
 }
 
@@ -708,7 +726,7 @@ async function handleNewPassword(e) {
     $('#new-password-form').reset();
     await enter(false);
   } catch (err) {
-    note.textContent = err.message || 'That did not work.';
+    note.textContent = friendlyError(err) || 'That did not work.';
   }
 }
 
@@ -1164,12 +1182,6 @@ function wire() {
     resolveHome();
   });
   $('#export').addEventListener('click', exportAll);
-  $('#built-toggle').addEventListener('click', e => {
-    const panel = $('#built-on');
-    const open = panel.hidden;
-    panel.hidden = !open;
-    e.currentTarget.setAttribute('aria-expanded', String(open));
-  });
   document.querySelectorAll('[data-to-account]').forEach(b =>
     b.addEventListener('click', openAccount));
   $('#account-back').addEventListener('click', () => resolveHome());
