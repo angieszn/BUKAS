@@ -458,29 +458,48 @@ function runIntro() {
   }, 300 + paras.length * 2600));
 }
 
-async function fadeTo(go) {
-  const cur = document.querySelector('.screen.is-active');
-  if (cur) {
-    cur.style.transition = 'opacity 420ms ease';
-    cur.style.opacity = '0';
-    await new Promise(r => setTimeout(r, 440));
-  }
-  await go();
-  if (cur) { cur.style.transition = ''; cur.style.opacity = ''; }
-  const next = document.querySelector('.screen.is-active');
-  if (next && next !== cur) {
-    next.style.opacity = '0';
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      next.style.transition = 'opacity 700ms ease';
-      next.style.opacity = '1';
-      setTimeout(() => { next.style.transition = ''; next.style.opacity = ''; }, 720);
-    }));
-  }
-}
+async function fadeTo(go) { await go(); }
+
+// Every screen change fades: out 180ms, in 320ms — about half a second.
+// Instant during first load (so a signed-in visit doesn't flash the landing)
+// and for anyone who has asked their device to reduce motion.
+const FADE_OUT = 180, FADE_IN = 320;
+let showToken = 0;
+let instantShow = true;
 
 function show(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('is-active', s.id === id));
-  window.scrollTo(0, 0);
+  const next = document.getElementById(id);
+  const cur = document.querySelector('.screen.is-active');
+  const token = ++showToken;
+  const swap = () => {
+    document.querySelectorAll('.screen').forEach(el => {
+      el.classList.toggle('is-active', el === next);
+      el.style.transition = '';
+      el.style.opacity = '';
+    });
+    window.scrollTo(0, 0);
+  };
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (instantShow || reduce || !cur || cur === next) { swap(); return Promise.resolve(); }
+
+  return new Promise(resolve => {
+    cur.style.transition = `opacity ${FADE_OUT}ms ease`;
+    cur.style.opacity = '0';
+    setTimeout(() => {
+      if (token !== showToken) return resolve();
+      swap();
+      next.style.opacity = '0';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (token !== showToken) return resolve();
+        next.style.transition = `opacity ${FADE_IN}ms ease`;
+        next.style.opacity = '1';
+        setTimeout(() => {
+          if (token === showToken) { next.style.transition = ''; next.style.opacity = ''; }
+          resolve();
+        }, FADE_IN + 10);
+      }));
+    }, FADE_OUT);
+  });
 }
 
 /* ---------- auth ---------- */
@@ -526,8 +545,9 @@ async function handleAuth(e) {
       ? await store.signUp(email, password)
       : await store.signIn(email, password);
     if (!signedIn) {
-      $('#auth-notice').textContent = 'Confirm your email, then sign in.';
-      setMode('signin');
+      $('#check-email-address').textContent = email;
+      $('#password').value = '';
+      await fadeTo(() => show('check-email'));
       return;
     }
     await enter(true);
@@ -700,8 +720,7 @@ async function openCompose() {
   stampTimer = setInterval(paintStamp, 20000);
 
   updateSealState();
-  show('compose');
-  setTimeout(() => ta.focus(), 60);
+  show('compose').then(() => ta.focus());
 }
 
 function dismissPrompt() {
@@ -945,6 +964,11 @@ function wire() {
     setMode(m === 'signup' ? 'signin' : m === 'signin' ? 'signup' : 'signin');
   });
   $('#auth-forgot').addEventListener('click', () => setMode('reset'));
+  $('#check-email-back').addEventListener('click', () => fadeTo(() => {
+    setMode('signin');
+    $('#email').value = $('#check-email-address').textContent;
+    show('landing');
+  }));
   $('#new-password-form').addEventListener('submit', handleNewPassword);
 
   $('#read-return').addEventListener('click', () => fadeTo(() => renderReturn(pendingGroup)));
@@ -964,25 +988,7 @@ function wire() {
   $('#to-write').addEventListener('click', openCompose);
   $('#prompt-dismiss').addEventListener('click', dismissPrompt);
   $('#composer').addEventListener('input', onType);
-  $('#compose-back').addEventListener('click', async () => {
-    clearInterval(stampTimer);
-    const screen = $('#compose');
-    screen.style.transition = 'opacity 420ms ease';
-    screen.style.opacity = '0';
-    await new Promise(r => setTimeout(r, 440));
-    await resolveHome();
-    screen.style.transition = '';
-    screen.style.opacity = '';
-    const next = document.querySelector('.screen.is-active');
-    if (next && next !== screen) {
-      next.style.opacity = '0';
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        next.style.transition = 'opacity 700ms ease';
-        next.style.opacity = '1';
-        setTimeout(() => { next.style.transition = ''; next.style.opacity = ''; }, 720);
-      }));
-    }
-  });
+  $('#compose-back').addEventListener('click', () => { clearInterval(stampTimer); resolveHome(); });;
   // While held, the words recede inside the box; release and they return.
   // A full hold lets them go, and the empty box stays, ready to start again.
   const composer = $('#composer');
@@ -1071,9 +1077,10 @@ function wire() {
   wire();
   if (!HAS_SUPABASE) $('#demo-note').hidden = false;
   store.onRecovery(() => show('new-password'));
-  if (store.recovering) { show('new-password'); return; }
+  if (store.recovering) { show('new-password'); instantShow = false; return; }
   try { await enter(); }
   catch (err) { console.error(err); show('landing'); }
+  instantShow = false;
 })();
 
 /* Console-only helpers for testing the mechanic without waiting days.
