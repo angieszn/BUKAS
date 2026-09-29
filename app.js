@@ -130,9 +130,33 @@ class SupabaseStore {
     if (error) throw error;
     return 'email';
   }
+  // Make sure there's a live session before an auth change. A stored session
+  // can go stale (long idle, token revoked, storage cleared); refresh it, and
+  // if that fails, report it plainly instead of "Auth session missing!".
+  async ensureSession() {
+    let { data } = await this.db.auth.getSession();
+    if (!data.session) {
+      const r = await this.db.auth.refreshSession();
+      data = { session: r.data && r.data.session };
+    }
+    if (!data.session) {
+      const err = new Error('You\u2019ve been signed out. Sign in again, then change your password.');
+      err.code = 'SESSION_EXPIRED';
+      throw err;
+    }
+    return data.session;
+  }
   async updatePassword(password) {
+    await this.ensureSession();
     const { error } = await this.db.auth.updateUser({ password });
-    if (error) throw error;
+    if (error) {
+      if (/session/i.test(error.message || '')) {
+        const err = new Error('You\u2019ve been signed out. Sign in again, then change your password.');
+        err.code = 'SESSION_EXPIRED';
+        throw err;
+      }
+      throw error;
+    }
   }
   async accountInfo() {
     const { data, error } = await this.db.auth.getUser();
@@ -467,7 +491,7 @@ function openAbout() {
 }
 
 function closeAcctForms() {
-  for (const [t, f] of [['#acct-email-toggle', '#acct-email-form'], ['#acct-pw-toggle', '#acct-pw-form']]) {
+  for (const [t, f] of [['#acct-pw-toggle', '#acct-pw-form']]) {
     $(f).hidden = true; $(f).reset(); $(t).setAttribute('aria-expanded', 'false');
   }
 }
@@ -476,16 +500,11 @@ async function openAccount() {
   closeAcctForms();
   $('#acct-notice').textContent = '';
   $('#acct-email').textContent = '';
-  $('#acct-email-pending').hidden = true;
   $('#acct-joined-row').hidden = true;
   show('account');
   try {
     const info = await store.accountInfo();
     $('#acct-email').textContent = info.email;
-    if (info.pendingEmail) {
-      $('#acct-email-pending').textContent = `Waiting for you to confirm ${info.pendingEmail}. Until then, sign in with the email above.`;
-      $('#acct-email-pending').hidden = false;
-    }
     if (info.joined) {
       const d = new Date(info.joined);
       $('#acct-joined').textContent = `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
@@ -506,27 +525,6 @@ function toggleAcctForm(toggleSel, formSel, focusSel) {
   if (open) $(focusSel).focus();
 }
 
-async function handleChangeEmail(e) {
-  e.preventDefault();
-  const email = $('#acct-new-email').value.trim();
-  const note = $('#acct-notice');
-  if (!email) return;
-  try {
-    const how = await store.changeEmail(email);
-    closeAcctForms();
-    if (how === 'local') {
-      $('#acct-email').textContent = email.toLowerCase();
-      note.textContent = 'Email changed.';
-    } else {
-      $('#acct-email-pending').textContent = `We\u2019ve sent a link to ${email}. Open it to confirm the change. Until then, sign in with the email above.`;
-      $('#acct-email-pending').hidden = false;
-      note.textContent = '';
-    }
-  } catch (err) {
-    note.textContent = err.message || 'That didn\u2019t work.';
-  }
-}
-
 async function handleChangePassword(e) {
   e.preventDefault();
   const pw = $('#acct-new-pw').value;
@@ -538,6 +536,18 @@ async function handleChangePassword(e) {
     note.textContent = 'Password changed.';
   } catch (err) {
     note.textContent = err.message || 'That didn\u2019t work.';
+    if (err.code === 'SESSION_EXPIRED') {
+      // Send them to sign in with their email filled in.
+      const email = $('#acct-email').textContent;
+      setTimeout(async () => {
+        try { await store.signOut(); } catch (e) {}
+        signedIn = false;
+        setMode('signin');
+        $('#auth-form').reset();
+        $('#email').value = email;
+        show('landing');
+      }, 2200);
+    }
   }
 }
 
@@ -1163,9 +1173,7 @@ function wire() {
   document.querySelectorAll('[data-to-account]').forEach(b =>
     b.addEventListener('click', openAccount));
   $('#account-back').addEventListener('click', () => resolveHome());
-  $('#acct-email-toggle').addEventListener('click', () => toggleAcctForm('#acct-email-toggle', '#acct-email-form', '#acct-new-email'));
   $('#acct-pw-toggle').addEventListener('click', () => toggleAcctForm('#acct-pw-toggle', '#acct-pw-form', '#acct-new-pw'));
-  $('#acct-email-form').addEventListener('submit', handleChangeEmail);
   $('#acct-pw-form').addEventListener('submit', handleChangePassword);
 
   document.querySelectorAll('[data-sign-out]').forEach(b =>
