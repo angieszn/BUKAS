@@ -78,8 +78,16 @@ function validConfig(c) {
     String(c.SUPABASE_URL).startsWith('http') && !String(c.SUPABASE_ANON_KEY).startsWith('PASTE'));
 }
 
+// Keep only https://xxxx.supabase.co — a pasted /rest/v1/ or trailing slash
+// otherwise produces "Invalid path specified in request URL".
+function cleanConfig(c) {
+  let url = String(c.SUPABASE_URL).trim();
+  try { url = new URL(url).origin; } catch (e) {}
+  return { SUPABASE_URL: url, SUPABASE_ANON_KEY: String(c.SUPABASE_ANON_KEY).trim() };
+}
+
 async function loadConfig() {
-  if (validConfig(window.BUKAS_CONFIG)) return window.BUKAS_CONFIG;
+  if (validConfig(window.BUKAS_CONFIG)) return cleanConfig(window.BUKAS_CONFIG);
   if (location.protocol === 'file:') return null;
   try {
     const ctrl = new AbortController();
@@ -88,7 +96,7 @@ async function loadConfig() {
     clearTimeout(t);
     if (!res.ok || !(res.headers.get('content-type') || '').includes('json')) return null;
     const c = await res.json();
-    return validConfig(c) ? c : null;
+    return validConfig(c) ? cleanConfig(c) : null;
   } catch (e) { return null; }
 }
 
