@@ -5,9 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bukas</title>
 <meta name="theme-color" content="#EDE9E0">
+<meta name="description" content="A journal that gives your words back when you weren't expecting them. Write, seal it, and it returns on a day you don't choose.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Bukas">
+<meta property="og:description" content="Write something, seal it, and it comes back on a day you don't choose.">
+<meta property="og:url" content="https://bukasjournal.vercel.app/">
+<meta property="og:image" content="https://bukasjournal.vercel.app/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="share-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&family=Libre+Baskerville:ital@1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -39,7 +48,7 @@
       <ul class="rule-lines">
         <li>Everything you write comes back.</li>
         <li>You never choose when.</li>
-        <li>Until then it cannot be opened.</li>
+        <li>Until then, you can&rsquo;t open it.</li>
       </ul>
     </div>
 
@@ -64,7 +73,7 @@
 
     <div class="foot" style="margin-top: auto;">
       <button class="link-btn quiet-btn" data-to-about>About</button>
-      <span class="label" id="demo-note" hidden>No database connected &mdash; saving locally</span>
+      <span class="label" id="demo-note" hidden>Saving on this device only</span>
     </div>
   </section>
 
@@ -92,7 +101,7 @@
     <div class="pad-top">
       <h2 class="wordmark" style="font-size: 1.8rem;">Bukas</h2>
       <p class="body-text" style="font-size: 1.5rem; margin: 3.5rem 0 0;">Check your email.</p>
-      <p style="margin: 1.4rem 0 0; text-wrap: pretty;">Your account has been made. We&rsquo;ve sent a link to <span id="check-email-address" style="color: var(--ink); border-bottom: 1px solid var(--rule);"></span>. Open it to confirm, then come back and sign in.</p>
+      <p style="margin: 1.4rem 0 0; text-wrap: pretty;">Your account has been made. A link is on its way to <span id="check-email-address" style="color: var(--ink); border-bottom: 1px solid var(--rule);"></span>. Open it to confirm, then come back and sign in.</p>
       <p class="lede" style="margin: 1.4rem 0 0; font-size: 1rem;">Nothing there? It can take a minute, and sometimes it ends up in spam.</p>
     </div>
     <div class="foot" style="margin-top: auto;">
@@ -185,7 +194,7 @@
 
       <section class="about-sec">
         <h3 class="label">How it works</h3>
-        <p>You write something, hold to seal it, and it&rsquo;s gone. You can&rsquo;t reread it, search it or browse it. At some point it comes back. Could be days, could be years, and you don&rsquo;t get to pick. Sometimes two turn up together from different years with nothing to explain why. Once you&rsquo;ve read it, you seal it again and it goes back in.</p>
+        <p>You write something, hold to seal it, and it&rsquo;s gone. You can&rsquo;t reread it, search it or browse it. At some point it comes back. Could be days, could be years, and you don&rsquo;t get to pick. Sometimes two turn up together from different years with nothing to explain why. Once you&rsquo;ve read it, you can seal it again, put it off, or let it go for good.</p>
       </section>
 
       <section class="about-sec">
@@ -202,9 +211,13 @@
       <section class="about-sec">
         <h3 class="label">What it&rsquo;s built on</h3>
         <p>Albert Camus wrote about the absurd, the gap between wanting life to make sense and a world that doesn&rsquo;t give you an answer. He didn&rsquo;t think the goal was to close that gap. If you rush to explain it away, you stop really looking at your life. Bukas doesn&rsquo;t try to explain anything to you either. An entry just comes back, and what it means is up to you.</p>
+        <p class="phil-quote">&ldquo;One must imagine Sisyphus happy.&rdquo; <span>Albert Camus, <em>The Myth of Sisyphus</em></span></p>
         <p>Jean-Paul Sartre argued that you&rsquo;re responsible for your life even when you didn&rsquo;t choose how it started or what happens to you. You can&rsquo;t pick when your writing returns, but you can pick what you do with it when it does. That small choice is the part that belongs to you.</p>
+        <p class="phil-quote">&ldquo;Man is condemned to be free.&rdquo; <span>Jean-Paul Sartre, <em>Existentialism Is a Humanism</em></span></p>
         <p>Byung-Chul Han describes how a lot of pressure today doesn&rsquo;t come from a boss or anyone else. We put it on ourselves, always trying to be more productive and a better version of ourselves, until even rest feels like something to get right. That&rsquo;s why nothing here is counted. There&rsquo;s no streak to protect and no score to improve, so writing can just be writing.</p>
+        <p class="phil-quote">&ldquo;The achievement-subject exploits itself until it burns out.&rdquo; <span>Byung-Chul Han, <em>The Burnout Society</em></span></p>
         <p>John Vervaeke calls what a lot of people are feeling the meaning crisis. We have more information than ever, but less sense of what actually matters. His point is that more facts about yourself won&rsquo;t fix that. What helps is seeing things from a different angle. Reading something you wrote months or years ago, when you weren&rsquo;t expecting it, is one small way of doing that. You meet your own words as a slightly different person.</p>
+        <p class="phil-quote">&ldquo;Ignorance is lack of knowledge. Foolishness is a lack of wisdom.&rdquo; <span>John Vervaeke, <em>Awakening from the Meaning Crisis</em></span></p>
       </section>
     </div>
     <div class="foot" style="margin-top: auto;">

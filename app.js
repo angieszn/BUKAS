@@ -259,7 +259,7 @@ class LocalStore {
   }
   async signIn(email, password) {
     const u = this.data.users[email.toLowerCase()];
-    if (!u || u.password !== password) throw new Error('Those details do not match an account.');
+    if (!u || u.password !== password) throw new Error('That email and password don\u2019t match an account.');
     this.data.session = u.id;
     this.persist();
     return true;
@@ -533,7 +533,7 @@ async function handleChangePassword(e) {
     closeAcctForms();
     note.textContent = 'Password changed.';
   } catch (err) {
-    note.textContent = friendlyError(err) || 'That didn\u2019t work.';
+    note.textContent = friendlyError(err) || 'Something went wrong. Try again.';
     if (err.code === 'SESSION_EXPIRED') {
       // Send them to sign in with their email filled in.
       const email = $('#acct-email').textContent;
@@ -667,12 +667,12 @@ async function handleAuth(e) {
       if (how === 'local') { show('new-password'); return; }
       $('#auth-notice').textContent = 'If there\u2019s an account for that email, a link to reset your password is on its way.';
     } catch (err) {
-      $('#auth-notice').textContent = friendlyError(err) || 'That did not work.';
+      $('#auth-notice').textContent = friendlyError(err) || 'Something went wrong. Try again.';
     }
     return;
   }
   if (!email || password.length < 6) {
-    $('#auth-notice').textContent = 'An email and a password of at least six characters.';
+    $('#auth-notice').textContent = 'Enter your email and a password with at least six characters.';
     return;
   }
   try {
@@ -687,7 +687,7 @@ async function handleAuth(e) {
     }
     await enter(true);
   } catch (err) {
-    $('#auth-notice').textContent = friendlyError(err) || 'That did not work.';
+    $('#auth-notice').textContent = friendlyError(err) || 'Something went wrong. Try again.';
   }
 }
 
@@ -726,7 +726,7 @@ async function handleNewPassword(e) {
     $('#new-password-form').reset();
     await enter(false);
   } catch (err) {
-    note.textContent = friendlyError(err) || 'That did not work.';
+    note.textContent = friendlyError(err) || 'Something went wrong. Try again.';
   }
 }
 
@@ -1071,7 +1071,7 @@ function bindHold(el, ms, done, onPaint) {
 
 async function exportAll() {
   const rows = await store.all();
-  const lines = ['BUKAS', 'Everything you have written.', ''];
+  const lines = ['BUKAS', 'Everything you\u2019ve written.', ''];
   for (const e of rows) {
     lines.push('----------------------------------------');
     lines.push(`Written   ${plainDate(e.written_at)}`);
