@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bukas</title>
+<meta name="theme-color" content="#EDE9E0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="seal-veil">
+  <svg id="seal-art" viewBox="0 0 260 230" aria-hidden="true">
+    <g id="art-env">
+      <path id="art-flap-back" d="M30 90 L130 18 L230 90 Z" fill="#191713" stroke="#EDE9E0" stroke-width="1.25"></path>
+      <g id="art-paper">
+        <rect x="58" y="96" width="144" height="100" fill="#191713" stroke="#EDE9E0" stroke-width="1.25"></rect>
+        <line x1="76" y1="120" x2="184" y2="120" stroke="#6E685C" stroke-width="1.25"></line>
+        <line x1="76" y1="136" x2="184" y2="136" stroke="#6E685C" stroke-width="1.25"></line>
+        <line x1="76" y1="152" x2="150" y2="152" stroke="#6E685C" stroke-width="1.25"></line>
+      </g>
+      <rect x="30" y="90" width="200" height="120" fill="#191713" stroke="#EDE9E0" stroke-width="1.25"></rect>
+      <path d="M30 210 L130 148 L230 210" fill="none" stroke="#6E685C" stroke-width="1"></path>
+      <path id="art-flap" d="M30 90 L130 162 L230 90 Z" fill="#191713" stroke="#EDE9E0" stroke-width="1.25" opacity="0"></path>
+      <circle id="art-seal" cx="130" cy="158" r="8" fill="#6B4A2F" opacity="0"></circle>
+    </g>
+  </svg>
+</div>
+
+<div class="app">
+
+  <!-- 1. LANDING -->
+  <section class="screen is-active" id="landing">
+    <div class="pad-top">
+      <h1 class="wordmark">Bukas</h1>
+      <ul class="rule-lines">
+        <li>Everything you write comes back.</li>
+        <li>You never choose when.</li>
+        <li>Until then it cannot be opened.</li>
+      </ul>
+    </div>
+
+    <form class="stack" id="auth-form" data-mode="signup" style="padding: 3.5rem 0 0;">
+      <div class="field">
+        <label class="label" for="email">Email</label>
+        <input type="email" id="email" autocomplete="email" required>
+      </div>
+      <div class="field" id="password-field">
+        <label class="label" for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password" required>
+      </div>
+      <p class="notice" id="auth-notice"></p>
+      <div class="row">
+        <button type="submit" class="frame-btn" id="auth-submit">Sign up</button>
+        <button type="button" class="link-btn quiet-btn" id="auth-toggle">I already have an account</button>
+      </div>
+      <div>
+        <button type="button" class="link-btn quiet-btn" id="auth-forgot" hidden>Forgot your password?</button>
+      </div>
+    </form>
+
+    <div class="foot" style="margin-top: auto;">
+      <button class="link-btn quiet-btn" data-to-about>About</button>
+      <span class="label" id="demo-note" hidden>No database connected &mdash; saving locally</span>
+    </div>
+  </section>
+
+  <!-- INTRODUCTION — once, on first sign-in -->
+  <section class="screen" id="intro">
+    <div class="pad-top">
+      <h2 class="wordmark" style="font-size: 1.8rem;">Bukas, how it works</h2>
+      <div class="intro-body">
+        <p>You write something and hold the button to seal it. Bukas keeps it and picks a day to give it back. That could be in two weeks or in four years. You don't get to choose, and you won't know when.</p>
+        <p>Until then you can't open it, search for it or read it again. There's no archive and nothing to scroll through. You just wait, and one day it turns up.</p>
+        <p>It's a place to write for no one, not even the person you'll be later. Nothing gets counted and nothing nags you to come back. When something does return, read it, and then decide if you want to seal it again.</p>
+      </div>
+    </div>
+    <div class="foot" style="margin-top: auto;">
+      <button class="frame-btn" id="intro-continue">Begin</button>
+      <button class="link-btn quiet-btn" data-sign-out>Sign out</button>
+    </div>
+  </section>
+
+  <!-- NEW PASSWORD — arrived from a reset link -->
+  <section class="screen" id="new-password">
+    <div class="pad-top">
+      <h2 class="wordmark" style="font-size: 1.8rem;">Bukas</h2>
+      <p class="about-gloss">Choose a new password. Everything you&rsquo;ve sealed is still where it was.</p>
+    </div>
+    <form class="stack" id="new-password-form" style="padding: 3rem 0 0;">
+      <div class="field">
+        <label class="label" for="new-password-input">New password</label>
+        <input type="password" id="new-password-input" autocomplete="new-password" required>
+      </div>
+      <p class="notice" id="new-password-notice"></p>
+      <div class="row">
+        <button type="submit" class="frame-btn">Save password</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- WAITING — a return has arrived; the reader chooses the moment -->
+  <section class="screen" id="waiting">
+    <div class="pad-top">
+      <p class="lede" style="margin: 0 0 3.5rem;">Your past journal entries will return here.</p>
+      <p class="body-text" style="font-size: 1.5rem;">Something has come back.</p>
+    </div>
+    <div class="foot" style="margin-top: auto;">
+      <button class="frame-btn" id="read-return">Read it</button>
+      <button class="link-btn quiet-btn" id="waiting-write">Write</button>
+      <button class="link-btn quiet-btn" data-to-about>About</button>
+      <button class="link-btn quiet-btn" data-sign-out>Sign out</button>
+    </div>
+  </section>
+
+  <!-- 5. HOME -->
+  <section class="screen" id="home">
+    <div class="pad-top">
+      <p class="lede" style="margin: 0 0 3.5rem;">Your past journal entries will return here.</p>
+      <p class="body-text" style="font-size: 1.5rem;">Nothing today.</p>
+    </div>
+    <div class="foot" style="margin-top: auto;">
+      <button class="frame-btn" id="to-write">Write</button>
+      <button class="link-btn quiet-btn" data-to-about>About</button>
+      <button class="link-btn quiet-btn" data-sign-out>Sign out</button>
+    </div>
+  </section>
+
+  <!-- 2 / 3 / 4. COMPOSE, SEALING, SEALED -->
+  <section class="screen" id="compose">
+    <div class="compose-area">
+      <p class="date" id="compose-stamp"></p>
+      <div id="prompt-wrap" hidden>
+        <p id="prompt-text"></p>
+        <button class="link-btn quiet-btn" id="prompt-dismiss">write about something else</button>
+      </div>
+      <textarea id="composer" placeholder="" spellcheck="true" autocapitalize="sentences"></textarea>
+    </div>
+    <div class="compose-foot">
+      <button class="seal-hold" id="compose-discard"><span>Hold to discard</span></button>
+      <button class="seal-hold" id="seal-hold" disabled><span>Hold to seal</span></button>
+    </div>
+    <div class="compose-leave">
+      <button class="link-btn quiet-btn" id="compose-back">Leave it for now</button>
+    </div>
+  </section>
+
+  <!-- 6 / 7. RETURN and PAIRED RETURN -->
+  <section class="screen" id="return">
+    <div class="return-wrap" id="return-entries"></div>
+    <div class="row" id="return-controls">
+      <button class="frame-btn" id="reseal">Seal it again</button>
+      <button class="link-btn quiet-btn" id="not-now">Not now</button>
+      <button class="seal-hold" id="let-go"><span>Hold to let it go</span></button>
+      <button class="link-btn quiet-btn" data-sign-out>Sign out</button>
+    </div>
+  </section>
+
+  <!-- 8. ABOUT -->
+  <section class="screen" id="about">
+    <div class="pad-top">
+      <h2 class="wordmark">Bukas</h2>
+      <p class="about-gloss">Bukas is Tagalog for tomorrow. It also means open.</p>
+
+      <section class="about-sec">
+        <h3 class="label">How it works</h3>
+        <p>You write something, hold to seal it, and it&rsquo;s gone. You can&rsquo;t reread it, search it or browse it. At some point it comes back. Could be days, could be years, and you don&rsquo;t get to pick. Sometimes two turn up together from different years with nothing to explain why. Once you&rsquo;ve read it, you seal it again and it goes back in.</p>
+      </section>
+
+      <section class="about-sec">
+        <h3 class="label">Why it works that way</h3>
+        <p>Every other journalling app is built to help you get more out of what you wrote. Search, prompts, summaries, mood graphs, an AI that explains you to yourself. All of it assumes the problem is that you haven&rsquo;t had enough insight yet. Usually that isn&rsquo;t the problem. When you can go back whenever you want, you go back when you&rsquo;re already in a certain mood, and you end up finding the entries that match it. Bukas takes that choice off you, so your own words turn up when you weren&rsquo;t expecting them. That&rsquo;s the only way they&rsquo;re going to read differently.</p>
+        <p>There&rsquo;s nothing here to finish. No streaks, no counts, no badges, nothing telling you how much is sealed. Nothing happens if you stop. Nothing gets measured either, because once something is measured it turns into a thing you&rsquo;re supposed to improve, and that isn&rsquo;t what this is.</p>
+      </section>
+
+      <section class="about-sec">
+        <h3 class="label">Your writing stays yours</h3>
+        <p>You can export everything whenever you want, sealed entries included. The lock is part of the app, not the file. Your entries sit against your account so they can find you again years from now, and nothing reads what&rsquo;s inside them. The system only ever looks at dates.</p>
+      </section>
+
+      <section class="about-sec">
+        <button class="link-btn quiet-btn" id="built-toggle" aria-expanded="false" aria-controls="built-on">what this is built on</button>
+        <div id="built-on" hidden>
+          <h3 class="label">What it&rsquo;s built on</h3>
+          <p>Camus argued the absurd isn&rsquo;t a problem to be solved but a tension to be held: resolve it and you&rsquo;ve stopped looking at it. Sartre&rsquo;s point was that you&rsquo;re answerable for your life whether or not you chose the conditions of it. Byung-Chul Han describes how we&rsquo;ve come to exploit ourselves willingly, in the name of becoming our best selves. And John Vervaeke&rsquo;s account of the meaning crisis argues that what&rsquo;s gone wrong isn&rsquo;t a lack of information but a breakdown in how we work out what matters &mdash; which is why more insight can&rsquo;t fix it.</p>
+        </div>
+      </section>
+    </div>
+    <div class="foot" style="margin-top: auto;">
+      <button class="link-btn" id="export">Export everything</button>
+      <button class="link-btn quiet-btn" data-sign-out id="sign-out">Sign out</button>
+      <button class="link-btn quiet-btn" id="about-back">Back</button>
+    </div>
+    <section class="about-sec" id="delete-sec">
+      <h3 class="label">Leaving</h3>
+      <p>Export first if you want to keep anything. Deleting your account removes it and everything in it, sealed entries included. It can&rsquo;t be undone.</p>
+      <button class="seal-hold" id="delete-account"><span>Hold to delete account</span></button>
+    </section>
+  </section>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
