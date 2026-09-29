@@ -168,9 +168,10 @@ input:focus { border-bottom-color: var(--accent); }
   transition: opacity 400ms;
 }
 #prompt-text {
-  font-size: 1.28rem;
-  line-height: 1.6;
-  color: var(--muted);
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 1.08rem;
+  line-height: 1.7;
+  color: #3A362F;
   margin: 0 0 0.9rem;
   font-style: italic;
   text-wrap: pretty;
