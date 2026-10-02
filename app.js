@@ -146,8 +146,20 @@ class SupabaseStore {
     }
     return data.session;
   }
-  async updatePassword(password) {
+  async updatePassword(password, current) {
     await this.ensureSession();
+    if (current) {
+      // Signing in again makes the session "recent", which Supabase's
+      // secure password change setting requires before a password update.
+      const { data: u } = await this.db.auth.getUser();
+      const email = u && u.user ? u.user.email : '';
+      const { error: authErr } = await this.db.auth.signInWithPassword({ email, password: current });
+      if (authErr) {
+        const err = new Error('That current password isn\u2019t right.');
+        err.code = 'BAD_CURRENT';
+        throw err;
+      }
+    }
     const { error } = await this.db.auth.updateUser({ password });
     if (error) {
       if (/session/i.test(error.message || '')) {
@@ -526,10 +538,13 @@ function toggleAcctForm(toggleSel, formSel, focusSel) {
 async function handleChangePassword(e) {
   e.preventDefault();
   const pw = $('#acct-new-pw').value;
+  const current = $('#acct-current-pw').value;
   const note = $('#acct-notice');
+  if (!current) { note.textContent = 'Enter your current password first.'; return; }
   if (pw.length < 6) { note.textContent = 'At least six characters.'; return; }
   try {
-    await store.updatePassword(pw);
+    await store.updatePassword(pw, current);
+    $('#acct-pw-form').reset();
     closeAcctForms();
     note.textContent = 'Password changed.';
   } catch (err) {
@@ -621,6 +636,8 @@ function show(id) {
 
 // Supabase's password errors list every allowed character; say it plainly.
 function friendlyError(err) {
+  if (err && err.code === 'BAD_CURRENT') return err.message;
+  if (/reauthenticat/i.test((err && err.message) || '')) return 'For safety, sign out and back in, then change your password.';
   const m = (err && err.message) || '';
   if (/at least one character of each/i.test(m)) {
     const need = [];
@@ -1185,7 +1202,7 @@ function wire() {
   document.querySelectorAll('[data-to-account]').forEach(b =>
     b.addEventListener('click', openAccount));
   $('#account-back').addEventListener('click', () => resolveHome());
-  $('#acct-pw-toggle').addEventListener('click', () => toggleAcctForm('#acct-pw-toggle', '#acct-pw-form', '#acct-new-pw'));
+  $('#acct-pw-toggle').addEventListener('click', () => toggleAcctForm('#acct-pw-toggle', '#acct-pw-form', '#acct-current-pw'));
   $('#acct-pw-form').addEventListener('submit', handleChangePassword);
 
   document.querySelectorAll('[data-sign-out]').forEach(b =>

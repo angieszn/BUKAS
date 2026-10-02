@@ -241,6 +241,10 @@
           <button class="link-btn quiet-btn" id="acct-pw-toggle" aria-expanded="false" aria-controls="acct-pw-form">Change password</button>
           <form class="stack acct-form" id="acct-pw-form" hidden>
             <div class="field">
+              <label class="label" for="acct-current-pw">Current password</label>
+              <input type="password" id="acct-current-pw" autocomplete="current-password" required>
+            </div>
+            <div class="field">
               <label class="label" for="acct-new-pw">New password</label>
               <input type="password" id="acct-new-pw" autocomplete="new-password" required>
             </div>
