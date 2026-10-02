@@ -1204,6 +1204,19 @@ function wire() {
   $('#account-back').addEventListener('click', () => resolveHome());
   $('#acct-pw-toggle').addEventListener('click', () => toggleAcctForm('#acct-pw-toggle', '#acct-pw-form', '#acct-current-pw'));
   $('#acct-pw-form').addEventListener('submit', handleChangePassword);
+  $('#acct-forgot').addEventListener('click', async () => {
+    const note = $('#acct-notice');
+    const email = $('#acct-email').textContent.trim();
+    if (!email) { note.textContent = 'Something went wrong. Try again.'; return; }
+    const btn = $('#acct-forgot'); btn.disabled = true;
+    try {
+      await store.requestReset(email);
+      closeAcctForms();
+      note.textContent = 'A reset link is on its way to ' + email + '.';
+    } catch (err) {
+      note.textContent = friendlyError(err) || 'Something went wrong. Try again.';
+    } finally { setTimeout(() => { btn.disabled = false; }, 30000); }
+  });
 
   document.querySelectorAll('[data-sign-out]').forEach(b =>
     b.addEventListener('click', async () => {
