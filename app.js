@@ -110,7 +110,15 @@ class SupabaseStore {
   }
   async signUp(email, password) {
     const { data, error } = await this.db.auth.signUp({ email, password });
-    if (error) throw error;
+    if (error) {
+      if (/already (registered|exists)/i.test(error.message || '')) { const e = new Error('exists'); e.code = 'EXISTS'; throw e; }
+      throw error;
+    }
+    // With email confirmation on, Supabase answers an existing email with a
+    // user that has no identities instead of an error.
+    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      const e = new Error('exists'); e.code = 'EXISTS'; throw e;
+    }
     return !!data.session; // false when email confirmation is required
   }
   async signIn(email, password) {
@@ -263,7 +271,7 @@ class LocalStore {
   }
   async signUp(email, password) {
     const e = email.toLowerCase();
-    if (this.data.users[e]) throw new Error('An account already exists for that email.');
+    if (this.data.users[e]) { const x = new Error('exists'); x.code = 'EXISTS'; throw x; }
     this.data.users[e] = { id: 'u_' + Math.random().toString(36).slice(2), password, created_at: new Date().toISOString() };
     this.data.session = this.data.users[e].id;
     this.persist();
@@ -704,6 +712,14 @@ async function handleAuth(e) {
     }
     await enter(true);
   } catch (err) {
+    if (err && err.code === 'EXISTS') {
+      setMode('signin');
+      $('#email').value = email;
+      $('#password').value = '';
+      $('#auth-notice').textContent = 'There\u2019s already an account with that email. Sign in instead, or use \u201cForgot your password?\u201d if you need to.';
+      $('#password').focus();
+      return;
+    }
     $('#auth-notice').textContent = friendlyError(err) || 'Something went wrong. Try again.';
   }
 }
@@ -1132,7 +1148,7 @@ function wire() {
     } catch (err) { console.error(err); return; }
     signedIn = false;
     returnedNow = []; pendingGroup = []; draftId = null;
-    setMode('signup');
+    setMode('signin');
     $('#auth-form').reset();
     await fadeTo(() => show('landing'));
   });
@@ -1225,7 +1241,7 @@ function wire() {
       await store.signOut();
       signedIn = false;
       returnedNow = [];
-      setMode('signup');
+      setMode('signin');
       $('#auth-form').reset();
       show('landing');
     }));
@@ -1243,7 +1259,7 @@ function wire() {
   const c = await loadConfig();
   if (c) { cfg = c; HAS_SUPABASE = true; }
   store = HAS_SUPABASE ? new SupabaseStore() : new LocalStore();
-  setMode('signup');
+  setMode('signin');
   wire();
   if (!HAS_SUPABASE) $('#demo-note').hidden = false;
   store.onRecovery(() => show('new-password'));
